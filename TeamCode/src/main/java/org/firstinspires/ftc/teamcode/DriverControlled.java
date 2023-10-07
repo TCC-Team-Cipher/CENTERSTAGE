@@ -48,10 +48,10 @@ public class DriverControlled extends OpMode
 
     @Override
     public void init() {
-        mecanumDrive = new MecanumDrive(hardwareMap);
+        mecanumDrive = new MecanumDrive(this);
 
-        grip = new SoftwareServo(hardwareMap, "grip", 0.25, 0.5);
-        rotate = new SoftwareServo(hardwareMap, "rotate", 0.65, 1);
+        grip = new SoftwareServo(this, "grip", 0.25, 0.5);
+        rotate = new SoftwareServo(this, "rotate", 0.65, 1);
 
         telemetry.addData("Status", "Initialized");
     }
@@ -75,18 +75,19 @@ public class DriverControlled extends OpMode
         double x = gamepad1.left_stick_x;
         double y = gamepad1.left_stick_y;
         double dir = Math.atan2(y, x);
+        if (gamepad1.left_stick_button) {
+            dir = Math.round(dir / (Math.PI / 2)) * (Math.PI / 2);
+        }
         double mag = Math.sqrt(x * x + y * y);
         double turn = gamepad1.right_stick_x;
 
-        mecanumDrive.drive(dir, mag, turn);
+        mecanumDrive.drive(dir, turn, mag);
 
         grip.drive(delta, gamepad2.left_stick_x);
         rotate.drive(delta, gamepad2.left_stick_y);
 
-        telemetry.addData("Run Time", runtime.toString());
-
-        telemetry.addData("Grip Position", grip.position);
-        telemetry.addData("Rotate Position", rotate.position);
+        telemetry.addData("Run Time", "%.2f", currentFrame);
+        telemetry.update();
     }
 
     @Override
