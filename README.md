@@ -11,6 +11,4 @@ We use Onshape for 3D design; you can find the parts used in our robot here:
 - [Pixel Grip](https://cad.onshape.com/documents/40dff4ed8e8e520cdac1a7cf/w/0138985ce5ba9a7538b9f971/e/35ba401ce59b594141c3796f)
 - [Arm](https://cad.onshape.com/documents/e4ef7ef1992f17cf19fd56ec/w/28b39830bfbebe338a72eeb0/e/453defd3a65951256b8deffe)
 
-There are also [3MF files](Printing/) for PrusaSlicer because some of the parts need quite specific configurations for printing.
-
 All of these are licensed under [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/deed.en). This means that you can use them however you want as long as you credit us and use a similar license.
