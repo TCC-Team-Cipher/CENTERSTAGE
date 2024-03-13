@@ -30,10 +30,10 @@ public class MecanumDrive {
         motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor3.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        motor0.setDirection(DcMotorEx.Direction.FORWARD);
-        motor1.setDirection(DcMotorEx.Direction.REVERSE);
-        motor2.setDirection(DcMotorEx.Direction.FORWARD);
-        motor3.setDirection(DcMotorEx.Direction.REVERSE);
+        motor0.setDirection(DcMotorEx.Direction.REVERSE);
+        motor1.setDirection(DcMotorEx.Direction.FORWARD);
+        motor2.setDirection(DcMotorEx.Direction.REVERSE);
+        motor3.setDirection(DcMotorEx.Direction.FORWARD);
     }
 
     public void drive(double dir, double turn, double power) {
@@ -41,10 +41,10 @@ public class MecanumDrive {
         double power12 = Math.sin(dir + 0.25 * Math.PI) * power;
 
         double[] powers = {
-                power03 - turn,
-                power12 + turn,
+                power03 + turn,
                 power12 - turn,
-                power03 + turn
+                power12 + turn,
+                power03 - turn
         };
 
         double[] scaled = Arrays.stream(powers).map(element -> element * 360).toArray();

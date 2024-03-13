@@ -31,39 +31,36 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 @TeleOp(name="Driver Controlled", group="CENTERSTAGE")
 
-public class DriverControlled extends OpMode
-{
-    private SoftwareServo grip;
-    private SoftwareServo rotate;
+public class DriverControlled extends OpMode {
+    private Robot robot;
 
-    private MecanumDrive mecanumDrive;
-
-    private ElapsedTime runtime = new ElapsedTime();
+    private final ElapsedTime runtime = new ElapsedTime();
     
     private double lastFrame;
 
+    private boolean rightBumper;
+
     @Override
     public void init() {
-        mecanumDrive = new MecanumDrive(this);
+        robot = new Robot(this);
 
-        grip = new SoftwareServo(this, "grip", 0.25, 0.5);
-        rotate = new SoftwareServo(this, "rotate", 0.65, 1);
+        rightBumper = false;
 
         telemetry.addData("Status", "Initialized");
-    }
-
-    @Override
-    public void init_loop() {
     }
 
     @Override
     public void start() {
         runtime.reset();
         lastFrame = runtime.seconds();
+
+        robot.start();
     }
 
     @Override
@@ -81,17 +78,22 @@ public class DriverControlled extends OpMode
         double mag = Math.sqrt(x * x + y * y);
         double turn = gamepad1.right_stick_x;
 
-        mecanumDrive.drive(dir, turn, mag);
+        robot.mecanumDrive.drive(dir, turn, mag);
 
-        grip.drive(delta, gamepad2.left_stick_x);
-        rotate.drive(delta, gamepad2.left_stick_y);
+        double pitch = gamepad2.left_stick_y * delta;
+        double yaw = -gamepad2.right_stick_x  / 3;
+        robot.grip.drive(pitch, yaw);
+
+        if (gamepad2.right_bumper && !rightBumper) {
+            robot.grip.toggleRight();
+        }
+        rightBumper = gamepad2.right_bumper;
+
+        double armDrive = gamepad2.right_trigger - gamepad2.left_trigger;
+        robot.arm.drive(delta, armDrive);
 
         telemetry.addData("Run Time", "%.2f", currentFrame);
         telemetry.update();
-    }
-
-    @Override
-    public void stop() {
     }
 
 }
