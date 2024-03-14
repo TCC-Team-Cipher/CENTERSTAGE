@@ -33,13 +33,13 @@ public class Arm {
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         while (!limitSwitch.isPressed()) {
-            motor.setPower(-0.25);
+            motor.setPower(-0.5);
         }
         while (limitSwitch.isPressed()) {
-            motor.setPower(0.1);
+            motor.setPower(0.5);
         }
         while (!limitSwitch.isPressed()) {
-            motor.setPower(-0.1);
+            motor.setPower(-0.5);
         }
 
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

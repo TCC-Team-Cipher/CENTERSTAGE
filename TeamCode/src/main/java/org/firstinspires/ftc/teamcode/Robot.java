@@ -26,6 +26,7 @@ public class Robot {
 
         BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
         //parameters.accelerationIntegrationAlgorithm = new AccelerationIntegrator();
+        parameters.calibrationDataFile = "AdafruitIMUCalibration.json";
 
         imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
         imu.initialize(parameters);

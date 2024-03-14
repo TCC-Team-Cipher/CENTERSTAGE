@@ -45,12 +45,14 @@ public class DriverControlled extends OpMode {
     private double lastFrame;
 
     private boolean rightBumper;
+    private boolean leftBumper;
 
     @Override
     public void init() {
         robot = new Robot(this);
 
         rightBumper = false;
+        leftBumper = false;
 
         telemetry.addData("Status", "Initialized");
     }
@@ -83,6 +85,11 @@ public class DriverControlled extends OpMode {
         double pitch = gamepad2.left_stick_y * delta;
         double yaw = -gamepad2.right_stick_x  / 3;
         robot.grip.drive(pitch, yaw);
+
+        if (gamepad2.left_bumper && !leftBumper) {
+            robot.grip.toggleLeft();
+        }
+        leftBumper = gamepad2.left_bumper;
 
         if (gamepad2.right_bumper && !rightBumper) {
             robot.grip.toggleRight();

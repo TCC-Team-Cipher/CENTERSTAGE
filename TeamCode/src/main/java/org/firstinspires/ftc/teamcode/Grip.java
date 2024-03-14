@@ -12,7 +12,10 @@ public class Grip {
     private double pitchPosition;
 
     private final Servo rightServo;
-    double rightPosition = 0.0d;
+    boolean rightOpen;
+
+    private final Servo leftServo;
+    boolean leftOpen;
 
     private final Telemetry telemetry;
 
@@ -22,6 +25,10 @@ public class Grip {
         pitchPosition = 1.0d;
 
         rightServo = opMode.hardwareMap.get(Servo.class, "right");
+        rightOpen = false;
+
+        leftServo = opMode.hardwareMap.get(Servo.class, "left");
+        leftOpen = false;
 
         telemetry = opMode.telemetry;
     }
@@ -37,12 +44,12 @@ public class Grip {
     }
 
     public void toggleRight() {
-        if (rightPosition == 0.0d) {
-            rightPosition = 1.0d;
-        } else {
-            rightPosition = 0.0d;
-        }
+        rightOpen = !rightOpen;
+        rightServo.setPosition(rightOpen ? 1.0d : 0.25d);
+    }
 
-        rightServo.setPosition(rightPosition);
+    public void toggleLeft() {
+        leftOpen = !leftOpen;
+        leftServo.setPosition(leftOpen ? 1.0d : 0.25d);
     }
 }
