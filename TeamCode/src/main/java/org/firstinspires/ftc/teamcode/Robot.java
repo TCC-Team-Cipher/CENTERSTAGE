@@ -6,6 +6,8 @@ import androidx.annotation.Nullable;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.hardware.bosch.NaiveAccelerationIntegrator;
+import com.qualcomm.robotcore.hardware.ColorRangeSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
@@ -16,21 +18,19 @@ public class Robot {
 
     public Arm arm;
     public Grip grip;
+
     public MecanumDrive mecanumDrive;
-    public BNO055IMU imu;
+
+    public DistanceSensor leftDistanceSensor;
+    public DistanceSensor rightDistanceSensor;
 
     public Robot(OpMode opMode) {
         grip = new Grip(opMode);
-        mecanumDrive = new MecanumDrive(opMode);
         arm = new Arm(opMode);
+        mecanumDrive = new MecanumDrive(opMode);
 
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        //parameters.accelerationIntegrationAlgorithm = new AccelerationIntegrator();
-        parameters.calibrationDataFile = "AdafruitIMUCalibration.json";
-
-        imu = opMode.hardwareMap.get(BNO055IMU.class, "imu");
-        imu.initialize(parameters);
-        imu.startAccelerationIntegration(new Position(DistanceUnit.METER, .0d, 0.0d, 0.0d, 0), new Velocity(), 10);
+        leftDistanceSensor = opMode.hardwareMap.get(DistanceSensor.class, "leftDistanceSensor");
+        rightDistanceSensor = opMode.hardwareMap.get(DistanceSensor.class, "rightDistanceSensor");
     }
 
     public void start() {

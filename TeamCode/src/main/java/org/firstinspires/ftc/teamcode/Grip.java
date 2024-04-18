@@ -45,7 +45,7 @@ public class Grip {
 
     public void toggleRight() {
         rightOpen = !rightOpen;
-        rightServo.setPosition(rightOpen ? 1.0d : 0.25d);
+        rightServo.setPosition(rightOpen ? 0.0d : 0.75d);
     }
 
     public void toggleLeft() {

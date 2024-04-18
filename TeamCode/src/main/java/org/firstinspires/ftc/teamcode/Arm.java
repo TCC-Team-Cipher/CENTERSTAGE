@@ -16,6 +16,7 @@ public class Arm {
     private final TouchSensor limitSwitch;
 
     private double position;
+    private double offset;
 
     public Arm(OpMode opMode) {
         telemetry = opMode.telemetry;
@@ -33,13 +34,13 @@ public class Arm {
         motor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         while (!limitSwitch.isPressed()) {
-            motor.setPower(-0.5);
+            motor.setPower(-0.25);
         }
         while (limitSwitch.isPressed()) {
-            motor.setPower(0.5);
+            motor.setPower(0.25);
         }
         while (!limitSwitch.isPressed()) {
-            motor.setPower(-0.5);
+            motor.setPower(-0.25);
         }
 
         motor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -51,11 +52,27 @@ public class Arm {
     }
 
     public void drive(double delta, double drive) {
-        position += drive * delta * SPEED;
+        double position = this.position + drive * delta * SPEED;
         position = Math.max(0.0d, Math.min(position, MAX_POSITION));
 
-        motor.setTargetPosition((int)Math.round(this.position));
+        this.setPosition(position);
 
         telemetry.addData("Arm", "position: (%.2f)", position);
+    }
+
+    private void update() {
+        motor.setTargetPosition((int)Math.round(this.position + offset));
+    }
+
+    public void setPosition(double position) {
+        this.position = position;
+        update();
+
+        telemetry.addData("Arm", "position: (%.2f)", position);
+    }
+
+    public void changeOffset(double difference) {
+        offset += difference;
+        update();
     }
 }

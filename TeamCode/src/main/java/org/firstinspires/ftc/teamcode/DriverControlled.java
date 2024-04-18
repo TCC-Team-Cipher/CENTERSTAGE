@@ -71,17 +71,25 @@ public class DriverControlled extends OpMode {
         double delta = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        double x = gamepad1.left_stick_x;
-        double y = gamepad1.left_stick_y;
-        double dir = Math.atan2(y, x);
-        if (gamepad1.left_stick_button) {
-            dir = Math.round(dir / (Math.PI / 2)) * (Math.PI / 2);
-        }
-        double mag = Math.sqrt(x * x + y * y);
-        double turn = gamepad1.right_stick_x;
+        driveMecanumDrive();
 
-        robot.mecanumDrive.drive(dir, turn, mag);
+        driveGrip(delta);
 
+        driveArm(delta);
+
+        telemetry.addData("Run Time", "%.2f", currentFrame);
+        telemetry.update();
+    }
+
+    private void driveArm(double delta) {
+        double armDrive = gamepad2.right_trigger - gamepad2.left_trigger;
+        robot.arm.drive(delta, armDrive);
+
+        double offset = (gamepad2.dpad_up ? 1.0 : 0.0) - (gamepad2.dpad_down ? 1.0 : 0.0) * 100.0 * delta;
+        robot.arm.changeOffset(offset);
+    }
+
+    private void driveGrip(double delta) {
         double pitch = gamepad2.left_stick_y * delta;
         double yaw = -gamepad2.right_stick_x  / 3;
         robot.grip.drive(pitch, yaw);
@@ -95,12 +103,19 @@ public class DriverControlled extends OpMode {
             robot.grip.toggleRight();
         }
         rightBumper = gamepad2.right_bumper;
+    }
 
-        double armDrive = gamepad2.right_trigger - gamepad2.left_trigger;
-        robot.arm.drive(delta, armDrive);
+    private void driveMecanumDrive() {
+        double x = gamepad1.left_stick_x;
+        double y = gamepad1.left_stick_y;
+        double dir = Math.atan2(y, x);
+        if (gamepad1.left_stick_button) {
+            dir = Math.round(dir / (Math.PI / 2)) * (Math.PI / 2);
+        }
+        double mag = Math.sqrt(x * x + y * y) * 3.0d;
+        double turn = gamepad1.right_stick_x * 3.0d;
 
-        telemetry.addData("Run Time", "%.2f", currentFrame);
-        telemetry.update();
+        robot.mecanumDrive.drive(dir, turn, mag);
     }
 
 }
