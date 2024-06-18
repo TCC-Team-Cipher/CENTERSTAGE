@@ -1,156 +1,135 @@
 package org.firstinspires.ftc.teamcode;
 
+import androidx.annotation.NonNull;
+
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
+import com.acmerobotics.roadrunner.Action;
+import com.acmerobotics.roadrunner.Pose2d;
+import com.acmerobotics.roadrunner.SequentialAction;
+import com.acmerobotics.roadrunner.Vector2d;
+import com.acmerobotics.roadrunner.ftc.Actions;
+import com.arcrobotics.ftclib.controller.PIDController;
+import com.arcrobotics.ftclib.hardware.motors.Motor;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.util.ElapsedTime;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.config.ArmConfig;
+import org.firstinspires.ftc.teamcode.roadrunner.MecanumDrive;
 
-import java.util.Optional;
-
-@Autonomous(name = "Autonomous Phase", group = "CENTERSTAGE", preselectTeleOp = "DriverControlled")
+@Autonomous(name = "Autonomous Phase", group = "CENTERSTAGE")
 public class AutonomousPhase extends LinearOpMode {
-    private Robot robot;
+    static class Arm {
+        private final Motor motor;
+        private final PIDController controller;
 
-    private final ElapsedTime runtime = new ElapsedTime();
+        public Arm(HardwareMap hardwareMap) {
+            this.motor = new Motor(hardwareMap, "armMotor");
+            this.motor.setInverted(true);
+            this.motor.setRunMode(Motor.RunMode.RawPower);
+            this.motor.setZeroPowerBehavior(Motor.ZeroPowerBehavior.BRAKE);
+            this.motor.resetEncoder();
 
-    private static final double FORWARDS = Math.PI * 1.5d;
-    private static final double BACKWARDS = Math.PI * 0.5d;
-    private static final double RIGHT = 0.0d;
-    private static final double LEFT = Math.PI;
-
-    enum Position {
-        LEFT,
-        RIGHT,
-        MIDDLE,
+            this.controller = new PIDController(ArmConfig.P, ArmConfig.I, ArmConfig.D);
+            this.controller.setTolerance(ArmConfig.TOLERANCE);
+        }
     }
 
-    private Position position;
+    private Arm arm;
 
-    private void update() {
-        telemetry.update();
+    private Claw left;
+    private Claw right;
+
+    public class MoveArm implements Action {
+        private final double position;
+
+        public MoveArm(double position) {
+            this.position = position;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            arm.controller.setSetPoint(this.position);
+            double output = arm.controller.calculate(arm.motor.getCurrentPosition());
+            if (!arm.controller.atSetPoint()) {
+                arm.motor.set(output);
+                return true;
+            } else {
+                arm.motor.set(0);
+                return false;
+            }
+        }
     }
 
+    public class SetClaw implements Action {
+        private final Claw claw;
+        private final boolean open;
+
+        public SetClaw(Claw claw, boolean open) {
+            this.claw = claw;
+            this.open = open;
+        }
+
+        @Override
+        public boolean run(@NonNull TelemetryPacket telemetryPacket) {
+            this.claw.set(this.open);
+            return false;
+        }
+    }
 
     @Override
-    public void runOpMode() throws InterruptedException {
-        robot = new Robot(this);
-        position = null;
+    public void runOpMode() {
+        DistanceSensor leftSensor = hardwareMap.get(DistanceSensor.class, "leftDistanceSensor");
+        DistanceSensor rightSensor = hardwareMap.get(DistanceSensor.class, "rightDistanceSensor");
 
-        telemetry.addLine()
-                .addData("left", () -> robot.leftDistanceSensor.getDistance(DistanceUnit.CM))
-                .addData("right", () -> robot.rightDistanceSensor.getDistance(DistanceUnit.CM))
-                .addData("position", () -> position != null ? position.toString() : "null");
+        arm = new Arm(hardwareMap);
+        MecanumDrive drive = new MecanumDrive(hardwareMap, new Pose2d(-30d, 30d, Math.toRadians(90)));
 
-        waitForStart();
+        left = new Claw(hardwareMap, "left");
+        right = new Claw(hardwareMap, "right");
 
-        robot.start();
+        Action liftArm = new MoveArm(200d);
 
-        runtime.reset();
+        Action initialMove = drive.actionBuilder(drive.pose)
+                .lineToY(18d)
+                .build();
 
-        robot.arm.setPosition(200.0d);
+        Action position1 = drive.actionBuilder(drive.pose)
+                .splineTo(new Vector2d(-30, 18d), Math.toRadians(0d))
+                .build();
 
-        doUpdates(1.0d);
+        Action position2 = drive.actionBuilder(drive.pose)
+                .build();
 
-        moveToStart();
+        Action position3 = drive.actionBuilder(drive.pose)
+                .splineTo(new Vector2d(-30, 18d), Math.toRadians(180d))
+                .build();
 
-        findPosition();
+        Action openLeftClaw = new SetClaw(left, true);
 
-        moveToPosition();
-
-        dropPixel();
-
-        doUpdates(10.0d);
-    }
-
-    private void stopMecanumDrive() {
-        robot.mecanumDrive.drive(0.0d, 0.0d, 0.0d);
-    }
-
-    private void moveToStart() {
-        double end = runtime.time() + 1.15d;
-        while (runtime.time() < end) {
-            robot.mecanumDrive.drive(FORWARDS, 0.0d, 3.0d);
-            update();
-        }
-        stopMecanumDrive();
-    }
-
-    private void findPosition() {
-        double end = runtime.time() + 1.0d;
-
-        boolean leftFound = false;
-        boolean rightFound = false;
-
-        while (runtime.time() < end) {
-            robot.mecanumDrive.drive(FORWARDS, 0.0d, 1.0d);
-
-            if (!(leftFound || rightFound)) {
-                leftFound = robot.leftDistanceSensor.getDistance(DistanceUnit.CM) <= 30.0d;
-                rightFound = robot.rightDistanceSensor.getDistance(DistanceUnit.CM) <= 30.0d;
-            }
-
-            update();
+        while (!isStopRequested() && !opModeIsActive()) {
+            telemetry.update();
         }
 
-        if (leftFound) {
-            position = Position.LEFT;
-        } else if (rightFound) {
-            position = Position.RIGHT;
+        Actions.runBlocking(new SequentialAction(
+                liftArm,
+                initialMove
+        ));
+
+        Action nextAction;
+        if (leftSensor.getDistance(DistanceUnit.CM) < 30d) {
+            nextAction = position1;
+        } else if (rightSensor.getDistance(DistanceUnit.CM) < 30d) {
+            nextAction = position3;
         } else {
-            position = Position.MIDDLE;
+            nextAction = position2;
         }
 
-        stopMecanumDrive();
-    }
-
-    private void moveToPosition() {
-        Optional<Double> turn = Optional.empty();
-        Optional<Double> direction = Optional.empty();
-        if (position == Position.LEFT) {
-            turn = Optional.of(-3.0d);
-            direction = Optional.of(RIGHT + 0.1);
-        } else if (position == Position.RIGHT ){
-            turn = Optional.of(3.0d);
-            direction = Optional.of(LEFT - 0.1);
-        }
-
-        if (turn.isPresent()) {
-            double firstEnd = runtime.time() + 0.75d;
-            while (runtime.time() < firstEnd) {
-                robot.mecanumDrive.drive(0.0d, turn.get(), 0.0d);
-            }
-
-            double secondEnd = runtime.time() + 0.5d;
-            while (runtime.time() < secondEnd) {
-                robot.mecanumDrive.drive(BACKWARDS, 0.0d, 3.0d);
-            }
-        }
-
-        stopMecanumDrive();
-    }
-
-    private void dropPixel() {
-        robot.grip.toggleLeft();
-
-        doUpdates(2.0d);
-
-        robot.arm.setPosition(500.0d);
-
-
-        double end = runtime.time() + 1.0d;
-
-        while (runtime.time() < end) {
-            robot.mecanumDrive.drive(BACKWARDS, 0.0d, 1.0d);
-        }
-
-        stopMecanumDrive();
-    }
-
-    private void doUpdates(double time) {
-        double end = runtime.time() + time;
-        while (runtime.time() < end) {
-            update();
-        }
+        Actions.runBlocking(new SequentialAction(
+                nextAction,
+                openLeftClaw
+        ));
     }
 }

@@ -1,18 +1,11 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.old;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.hardware.bosch.NaiveAccelerationIntegrator;
-import com.qualcomm.robotcore.hardware.ColorRangeSensor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 
-import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.teamcode.old.Arm;
+import org.firstinspires.ftc.teamcode.old.Grip;
+import org.firstinspires.ftc.teamcode.old.MecanumDrive;
 
 public class Robot {
 
