@@ -20,4 +20,16 @@ public class GripCommand extends CommandBase {
     public void toggleRight() {
         this.gripSubsystem.right.toggle();
     }
+
+    public void top() {
+        this.gripSubsystem.pitch.set(0d);
+    }
+
+    public void backboard() {
+        this.gripSubsystem.pitch.set(0.11d);
+    }
+
+    public void bottom() {
+        this.gripSubsystem.pitch.set(1d);
+    }
 }

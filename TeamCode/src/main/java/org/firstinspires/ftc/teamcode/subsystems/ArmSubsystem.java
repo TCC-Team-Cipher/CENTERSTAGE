@@ -26,7 +26,9 @@ public class ArmSubsystem extends SubsystemBase {
 
     public static double SPEED = 25.0d;
     public static double ADJUSTMENT_SPEED = 10.0d;
-    public static double MAX_POS = 1200;
+    public static double MAX_POS = 900d;
+    public static double SLOWDOWN_THRESHOLD = 100d;
+    public static double SLOW_SPEED = 10.0d;
 
     public ArmSubsystem(GamepadEx gamepad, HardwareMap hardwareMap) {
         this.gamepad = gamepad;
@@ -47,7 +49,9 @@ public class ArmSubsystem extends SubsystemBase {
 
         offset += (gamepad.getTrigger(GamepadKeys.Trigger.LEFT_TRIGGER) - gamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER)) * ADJUSTMENT_SPEED;
 
-        double position = this.position + gamepad.getLeftY() * SPEED;
+        double stickPos = gamepad.getLeftY() * Math.abs(gamepad.getLeftY());
+        double slowSpeed = this.position / SLOWDOWN_THRESHOLD;
+        double position = this.position + (this.position < SLOWDOWN_THRESHOLD && stickPos < 1d ? slowSpeed : 1d) * SPEED * stickPos;
         this.position = MathUtils.clamp(position, 0d, MAX_POS);
 
         double currentPosition = this.motor.getCurrentPosition() + offset;

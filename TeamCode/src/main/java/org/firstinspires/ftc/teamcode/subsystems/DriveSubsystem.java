@@ -34,11 +34,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        drive.driveFieldCentric(
+        drive.driveRobotCentric(
                 -gamepad.getLeftX(),
                 -gamepad.getLeftY(),
                 -gamepad.getRightX(),
-                this.imu.getAbsoluteHeading(),
                 false
         );
     }

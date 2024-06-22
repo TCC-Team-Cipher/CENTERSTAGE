@@ -8,38 +8,31 @@ import com.arcrobotics.ftclib.util.MathUtils;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.Claw;
+import org.firstinspires.ftc.teamcode.hardware.Claw;
+import org.firstinspires.ftc.teamcode.hardware.GripPitch;
 
 public class GripSubsystem extends SubsystemBase {
-    private static final double MIN_PITCH_POSITION = 0d;
-    private static final double MAX_PITCH_POSITION = .33d;
-
-    private final ServoEx pitch;
-    private double pitchPosition;
+    public final GripPitch pitch;
 
     public final Claw left;
     public final Claw right;
 
     private final GamepadEx gamepad;
 
-
     public GripSubsystem(GamepadEx gamepad, HardwareMap hardwareMap, Telemetry telemetry) {
         this.gamepad = gamepad;
 
-        pitch = new SimpleServo(hardwareMap, "pitch", 0d, 0d);
-        pitchPosition = MIN_PITCH_POSITION;
+        this.pitch = new GripPitch(hardwareMap);
 
-        left = new Claw(hardwareMap, "left");
-        right = new Claw(hardwareMap, "right");
-
-        telemetry.addLine("Grip")
-                .addData("Pitch", pitch::getPosition);
+        left = Claw.left(hardwareMap);
+        right = Claw.right(hardwareMap);
     }
 
     @Override
     public void periodic() {
-        pitchPosition += gamepad.getLeftY() / 10d;
-        pitchPosition = MathUtils.clamp(pitchPosition, MIN_PITCH_POSITION, MAX_PITCH_POSITION);
-        pitch.setPosition(pitchPosition);
+        this.pitch.move(gamepad.getRightY() / 10d);
+
+        left.set();
+        right.set();
     }
 }

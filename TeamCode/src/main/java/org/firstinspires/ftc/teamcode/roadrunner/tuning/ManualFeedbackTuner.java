@@ -30,7 +30,7 @@ public final class ManualFeedbackTuner extends LinearOpMode {
 
             while (opModeIsActive()) {
                 Actions.runBlocking(
-                    drive.actionBuilder(new Pose2d(0, 0, 0))
+                    drive.actionBuilder(new Pose2d(0, 0, 0), pose -> pose)
                             .lineToX(DISTANCE)
                             .lineToX(0)
                             .build());

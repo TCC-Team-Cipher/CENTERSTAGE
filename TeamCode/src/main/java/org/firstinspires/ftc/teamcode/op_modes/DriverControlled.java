@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.op_modes;
 
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.button.Button;
@@ -36,6 +36,19 @@ public class DriverControlled extends CommandOpMode {
                 armGamepad, GamepadKeys.Button.RIGHT_BUMPER
         );
         rightGripToggle.whenPressed(gripCommand::toggleRight);
+
+        Button top = new GamepadButton(
+                armGamepad, GamepadKeys.Button.Y
+        );
+        Button backboard = new GamepadButton(
+                armGamepad, GamepadKeys.Button.B
+        );
+        Button bottom = new GamepadButton(
+                armGamepad, GamepadKeys.Button.A
+        );
+        top.whenPressed(gripCommand::top);
+        backboard.whenPressed(gripCommand::backboard);
+        bottom.whenPressed(gripCommand::bottom);
 
         register(driveSubsystem, armSubsystem, clawSubsystem, telemetrySubsystem);
         gripCommand.schedule();
